@@ -1,0 +1,16 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="64" cy="64" r="60" fill="#0077B5"/>
+
+  <!-- Eye shape -->
+  <ellipse cx="64" cy="64" rx="40" ry="28" fill="#FFFFFF" stroke="#000" stroke-width="3"/>
+
+  <!-- Iris -->
+  <circle cx="64" cy="64" r="18" fill="#0077B5"/>
+
+  <!-- Pupil -->
+  <circle cx="64" cy="64" r="10" fill="#000000"/>
+
+  <!-- Highlight -->
+  <circle cx="68" cy="60" r="4" fill="#FFFFFF" opacity="0.9"/>
+</svg>

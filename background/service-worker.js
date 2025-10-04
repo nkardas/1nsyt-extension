@@ -3,6 +3,7 @@
 
 import { cache1nsyt, getCached1nsyt, clearCache, cleanupExpiredCache } from '../utils/storage.js';
 import { generate1nsyt } from '../utils/api.js';
+import { scrapeProfileInBackground } from '../utils/background-tab-manager.js';
 
 console.log('[1nsyt] Service worker initialized');
 
@@ -55,12 +56,31 @@ async function handle1nsytRequest(message, sender, sendResponse) {
       return;
     }
 
-    // TODO: Step 2 - Scrape in background tab if needed (future enhancement)
-    // const enrichedData = await scrapeProfileInBackground(profileUrl);
+    // Step 2 - Scrape in background tab for enriched data
+    console.log('[1nsyt] Enriching data via background tab...');
+    let enrichedData = profileData;
 
-    // Step 3 - Call Mistral AI API
+    try {
+      const scrapedData = await scrapeProfileInBackground(profileUrl);
+
+      // Merge scraped data with basic feed data
+      enrichedData = {
+        name: scrapedData.name || profileData.name,
+        title: scrapedData.title || profileData.title,
+        location: scrapedData.location || null,
+        company: scrapedData.company || null,
+        profileUrl: profileUrl
+      };
+
+      console.log('[1nsyt] Enriched data:', enrichedData);
+    } catch (error) {
+      console.warn('[1nsyt] Background scraping failed, using basic data:', error.message);
+      // Continue with basic data if scraping fails
+    }
+
+    // Step 3 - Call Mistral AI API with enriched data
     console.log('[1nsyt] Calling Mistral AI API...');
-    const apiResponse = await generate1nsyt(profileData);
+    const apiResponse = await generate1nsyt(enrichedData);
 
     if (!apiResponse.success) {
       throw new Error(apiResponse.error);
@@ -68,8 +88,8 @@ async function handle1nsytRequest(message, sender, sendResponse) {
 
     const result = apiResponse.data;
 
-    // Step 4 - Cache the result
-    await cache1nsyt(profileUrl, profileData, result);
+    // Step 4 - Cache the result with enriched data
+    await cache1nsyt(profileUrl, enrichedData, result);
 
     sendResponse({
       success: true,

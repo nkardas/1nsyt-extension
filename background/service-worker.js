@@ -2,6 +2,7 @@
 // Manifest V3 architecture: event-driven, not persistent
 
 import { cache1nsyt, getCached1nsyt, clearCache, cleanupExpiredCache } from '../utils/storage.js';
+import { generate1nsyt } from '../utils/api.js';
 
 console.log('[1nsyt] Service worker initialized');
 
@@ -54,32 +55,25 @@ async function handle1nsytRequest(message, sender, sendResponse) {
       return;
     }
 
-    // TODO: Step 2 - Scrape in background tab if needed
+    // TODO: Step 2 - Scrape in background tab if needed (future enhancement)
     // const enrichedData = await scrapeProfileInBackground(profileUrl);
 
-    // TODO: Step 3 - Call API
-    // const response = await fetch('https://api.1nsyt.app/api/1nsyt', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(enrichedData)
-    // });
+    // Step 3 - Call Mistral AI API
+    console.log('[1nsyt] Calling Mistral AI API...');
+    const apiResponse = await generate1nsyt(profileData);
 
-    // Placeholder response for now (simulate API call)
-    const placeholderResult = {
-      summary: "This is a placeholder summary. The API integration is not yet implemented.",
-      starters: [
-        "Placeholder conversation starter 1",
-        "Placeholder conversation starter 2",
-        "Placeholder conversation starter 3"
-      ]
-    };
+    if (!apiResponse.success) {
+      throw new Error(apiResponse.error);
+    }
+
+    const result = apiResponse.data;
 
     // Step 4 - Cache the result
-    await cache1nsyt(profileUrl, profileData, placeholderResult);
+    await cache1nsyt(profileUrl, profileData, result);
 
     sendResponse({
       success: true,
-      data: placeholderResult,
+      data: result,
       cached: false,
       timestamp: Date.now()
     });

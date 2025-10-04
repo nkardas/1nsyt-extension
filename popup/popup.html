@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1nsyt - LinkedIn Insights</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="popup-header">
+    <div class="logo">1NSYT</div>
+    <div class="tagline">Get the insight before you meet</div>
+  </div>
+
+  <!-- Stats section -->
+  <div class="stats-container">
+    <div class="stat-item">
+      <div class="stat-value" id="cache-count">0</div>
+      <div class="stat-label">Cached 1nsyts</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="cache-size">0 KB</div>
+      <div class="stat-label">Cache Size</div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button id="clear-cache-btn" class="btn btn-secondary">
+      Clear Cache
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="version">v1.0.0</div>
+    <div class="links">
+      <a href="https://github.com/nkardas/1nsyt-extension" target="_blank">GitHub</a>
+      <span>•</span>
+      <a href="#" id="feedback-link">Feedback</a>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

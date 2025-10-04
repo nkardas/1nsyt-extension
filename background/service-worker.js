@@ -1,6 +1,8 @@
 // background/service-worker.js - Background service worker for 1nsyt
 // Manifest V3 architecture: event-driven, not persistent
 
+import { cache1nsyt, getCached1nsyt, clearCache, cleanupExpiredCache } from '../utils/storage.js';
+
 console.log('[1nsyt] Service worker initialized');
 
 // Listen for extension installation
@@ -12,7 +14,8 @@ chrome.runtime.onInstalled.addListener((details) => {
     // TODO: Show onboarding popup
   } else if (details.reason === 'update') {
     console.log('[1nsyt] Extension updated to version:', chrome.runtime.getManifest().version);
-    // TODO: Clear old cache if version mismatch
+    // Cleanup expired cache on update
+    cleanupExpiredCache();
   }
 });
 
@@ -39,12 +42,17 @@ async function handle1nsytRequest(message, sender, sendResponse) {
     const { profileUrl, profileData } = message;
     console.log('[1nsyt] Requesting 1nsyt for:', profileUrl);
 
-    // TODO: Step 1 - Check cache first
-    // const cached = await getCached1nsyt(profileUrl);
-    // if (cached) {
-    //   sendResponse({ success: true, data: cached.result, cached: true });
-    //   return;
-    // }
+    // Step 1 - Check cache first
+    const cached = await getCached1nsyt(profileUrl);
+    if (cached) {
+      sendResponse({
+        success: true,
+        data: cached.result,
+        cached: true,
+        timestamp: cached.metadata.timestamp
+      });
+      return;
+    }
 
     // TODO: Step 2 - Scrape in background tab if needed
     // const enrichedData = await scrapeProfileInBackground(profileUrl);
@@ -56,20 +64,22 @@ async function handle1nsytRequest(message, sender, sendResponse) {
     //   body: JSON.stringify(enrichedData)
     // });
 
-    // TODO: Step 4 - Cache result
-    // await cache1nsyt(profileUrl, enrichedData, result.data);
+    // Placeholder response for now (simulate API call)
+    const placeholderResult = {
+      summary: "This is a placeholder summary. The API integration is not yet implemented.",
+      starters: [
+        "Placeholder conversation starter 1",
+        "Placeholder conversation starter 2",
+        "Placeholder conversation starter 3"
+      ]
+    };
 
-    // Placeholder response for now
+    // Step 4 - Cache the result
+    await cache1nsyt(profileUrl, profileData, placeholderResult);
+
     sendResponse({
       success: true,
-      data: {
-        summary: "This is a placeholder summary. The API integration is not yet implemented.",
-        starters: [
-          "Placeholder conversation starter 1",
-          "Placeholder conversation starter 2",
-          "Placeholder conversation starter 3"
-        ]
-      },
+      data: placeholderResult,
       cached: false,
       timestamp: Date.now()
     });
@@ -88,10 +98,9 @@ async function handle1nsytRequest(message, sender, sendResponse) {
  */
 async function handleClearCache(sendResponse) {
   try {
-    // TODO: Implement cache clearing
-    // await clearCache();
-    console.log('[1nsyt] Cache cleared');
-    sendResponse({ success: true });
+    const count = await clearCache();
+    console.log('[1nsyt] Cache cleared:', count, 'entries');
+    sendResponse({ success: true, count });
   } catch (error) {
     console.error('[1nsyt] Error clearing cache:', error);
     sendResponse({ success: false, error: error.message });
